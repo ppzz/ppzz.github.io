@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.0"><link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16-next.png"><link rel="mask-icon" href="/icon/safari-pinned-tab.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="https://fonts.loli.net/css?family=SF+Pro+SC:300,300italic,400,400italic,700,700italic%7CSF+Pro+Display:300,300italic,400,400italic,700,700italic%7CSF+Pro+Icons:300,300italic,400,400italic,700,700italic%7CPingFang+SC:300,300italic,400,400italic,700,700italic%7CHelvetica+Neue:300,300italic,400,400italic,700,700italic%7CHelvetica:300,300italic,400,400italic,700,700italic%7CArial:300,300italic,400,400italic,700,700italic%7Csans-serif:300,300italic,400,400italic,700,700italic%7CMenlo:300,300italic,400,400italic,700,700italic%7CMeslo+LG:300,300italic,400,400italic,700,700italic%7CMicrosoft+YaHei:300,300italic,400,400italic,700,700italic%7CSource+Code+Pro:300,300italic,400,400italic,700,700italic%7Cmonospace:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css"><script class="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"ppzz.github.io",root:"/",images:"/images",scheme:"Mist",version:"8.2.2",exturl:!1,sidebar:{position:"right",display:"post",padding:18,offset:12},copycode:!0,bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!0,comments:{style:"tabs",active:"valine",storage:!0,lazyload:!1,nav:null},motion:{enable:!0,async:!0,transition:{post_block:"fadeIn",post_header:"fadeInDown",post_body:"fadeInDown",coll_header:"fadeInLeft",sidebar:"fadeInUp"}},prism:!1,i18n:{placeholder:"搜索...",empty:"没有找到任何搜索结果：${query}",hits_time:"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）",hits:"找到 ${hits} 个搜索结果"},path:"/search.xml",localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1}}</script><meta name="description" content="之前一直对二层网络连接的知识体系模模糊糊，最近有空就总结了下。"><meta property="og:type" content="article"><meta property="og:title" content="网络是如何连接的：中继、集线器、交换机与网桥"><meta property="og:url" content="https://ppzz.github.io/posts/c338/index.html"><meta property="og:site_name" content="Peng Zhao"><meta property="og:description" content="之前一直对二层网络连接的知识体系模模糊糊，最近有空就总结了下。"><meta property="og:locale" content="zh_CN"><meta property="article:published_time" content="2018-09-08T16:00:00.000Z"><meta property="article:modified_time" content="2021-03-18T02:22:21.038Z"><meta property="article:author" content="Peng Zhao"><meta property="article:tag" content="网络基础"><meta name="twitter:card" content="summary"><link rel="canonical" href="https://ppzz.github.io/posts/c338/"><script class="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>网络是如何连接的：中继、集线器、交换机与网桥 | Peng Zhao</title><noscript><style>body{margin-top:2rem}.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header,.use-motion .sidebar{visibility:visible}.use-motion .footer,.use-motion .header,.use-motion .site-brand-container .toggle{opacity:initial}.use-motion .custom-logo-image,.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line{transform:scaleX(1)}.search-pop-overlay,.sidebar-nav{display:none}.sidebar-panel{display:block}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage" class="use-motion"><div class="headband"></div><main class="main"><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏" role="button"><span class="toggle-line"></span> <span class="toggle-line"></span> <span class="toggle-line"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><i class="logo-line"></i><h1 class="site-title">Peng Zhao</h1><i class="logo-line"></i></a></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fas fa-list-ul fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"><input autocomplete="off" autocapitalize="off" maxlength="80" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close" role="button"><i class="fa fa-times-circle"></i></span></div><div class="search-result-container no-result"><div class="search-result-icon"><i class="fa fa-spinner fa-pulse fa-5x"></i></div></div></div></div></div><div class="toggle sidebar-toggle" role="button"><span class="toggle-line"></span> <span class="toggle-line"></span> <span class="toggle-line"></span></div><aside class="sidebar"><div class="sidebar-inner sidebar-nav-active sidebar-toc-active"><ul class="sidebar-nav"><li class="sidebar-nav-toc">文章目录</li><li class="sidebar-nav-overview">站点概览</li></ul><div class="sidebar-panel-container"><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E7%BB%A7%E5%99%A8-Repeater"><span class="nav-number">1.</span> <span class="nav-text">中继器 Repeater</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BA%BF%E5%99%A8-Hub"><span class="nav-number">2.</span> <span class="nav-text">集线器 Hub</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E6%A1%A5-Bridge"><span class="nav-number">3.</span> <span class="nav-text">网桥 Bridge</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BD%91%E6%A1%A5%E7%9A%84mac%E5%9C%B0%E5%9D%80%E8%A1%A8%E6%98%AF%E6%80%8E%E4%B9%88%E5%BB%BA%E7%AB%8B%E8%B5%B7%E6%9D%A5%E7%9A%84%EF%BC%9F"><span class="nav-number">3.1.</span> <span class="nav-text">网桥的 mac 地址表是怎么建立起来的？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BD%91%E6%A1%A5%E5%BB%BA%E7%AB%8B%E7%9A%84%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91%E5%AD%98%E5%9C%A8%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="nav-number">3.2.</span> <span class="nav-text">网桥建立的网络拓扑存在的缺陷</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E6%8D%A2%E6%9C%BA-Switch"><span class="nav-number">4.</span> <span class="nav-text">交换机 Switch</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BD%91%E6%A1%A5%E3%80%81%E4%BA%A4%E6%8D%A2%E6%9C%BA%E4%B8%8E%E7%94%9F%E6%88%90%E6%A0%91%E5%8D%8F%E8%AE%AE"><span class="nav-number">4.1.</span> <span class="nav-text">网桥、交换机与生成树协议</span></a></li></ol></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person"><p class="site-author-name" itemprop="name">Peng Zhao</p><div class="site-description" itemprop="description">Fun Of Learning</div></div><div class="site-state-wrap site-overview-item animated"><nav class="site-state"><div class="site-state-item site-state-posts"><a href="/archives/"><span class="site-state-item-count">16</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"><a href="/categories/"><span class="site-state-item-count">13</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"><a href="/tags/"><span class="site-state-item-count">15</span> <span class="site-state-item-name">标签</span></a></div></nav></div></div></div></div></aside><div class="sidebar-dimmer"></div></header><div class="back-to-top" role="button"><i class="fa fa-arrow-up"></i> <span>0%</span></div><div class="reading-progress-bar"></div><noscript><div class="noscript-warning">Theme NexT works best with JavaScript enabled</div></noscript><div class="main-inner post posts-expand"><div class="post-block"><article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://ppzz.github.io/posts/c338/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/images/avatar.gif"><meta itemprop="name" content="Peng Zhao"><meta itemprop="description" content="Fun Of Learning"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="Peng Zhao"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">网络是如何连接的：中继、集线器、交换机与网桥</h1><div class="post-meta-container"><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i> </span><span class="post-meta-item-text">发表于</span> <time title="创建时间：2018-09-09 00:00:00" itemprop="dateCreated datePublished" datetime="2018-09-09T00:00:00+08:00">2018-09-09</time> </span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i> </span><span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Network/" itemprop="url" rel="index"><span itemprop="name">Network</span></a> </span></span><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i> </span><span class="post-meta-item-text">本文字数：</span> <span>4.2k</span> </span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i> </span><span class="post-meta-item-text">阅读时长 &asymp;</span> <span>4 分钟</span></span></div></div></header><div class="post-body" itemprop="articleBody"><p>之前一直对二层网络连接的知识体系模模糊糊，最近有空就总结了下。</p><span id="more"></span><p>这篇主要区分了一下常见的网络设备：</p><pre class="mermaid">graph TB
+    a(中继)
+    b(集线器)
+    c(网桥)
+    d(交换机)
+    e(网关)
+    f(路由器)
+%%</pre><p>上述设备工作的 OSI 网络层次分别是：</p><pre class="mermaid">graph TB
+    L5(应用层/表示层/会话层)
+    L4(传输层)
+    L3(网络层)
+    L2(数据链路层)
+    L1(物理层)
+    H1([网卡,中继,集线器])
+    H2([网桥,交换机])
+    H3([路由器,网关])
+subgraph OSI网络模型
+    L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1
+end
+    H1 -.-&gt; L1
+    H2 -.-&gt; L2
+    H3 -.-&gt; L3
+
+classDef comment fill:#fff,stroke:gray,stroke-dasharray: 5 5
+class H1,H2,H3 comment
+%%</pre><h3 id="中继器-Repeater"><a href="#中继器-Repeater" class="headerlink" title="中继器 Repeater"></a>中继器 Repeater</h3><p>为什么要有中继器？</p><p>当只有两台设备需要互相通信时，我们可以仅使用网线将设备连接起来。当两台需要通信的设备物理间隔比较远时，由于信号的衰减，我们就需要中继器来放大信号，使得信号传的更远。</p><ul><li>理论上只有一进一出两个端口，将进入端口的信号转发至另一个端口。</li><li>单纯的信号放大装置，用来扩大信号的传输距离。</li><li>典型的例子是：家里 WIFI 信号不够好时，可以通过增加中继器或把额外的路由器设置为中继模式来扩展 WIFI 覆盖范围。</li></ul><p>下面两中拓扑结构的最终效果是等价的：</p><pre class="mermaid">flowchart LR
+
+c1(A fas:fa-desktop) o--o h1(fas:fa-bolt 中继器) o--o c2(B fas:fa-desktop)
+
+c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
+%%</pre><p>中继器没有做到的事情：</p><p>中继器解决了远距离传播信号的问题。但是现实中我们不会仅仅只需两台设备互相通信，而是多台设备都能互相通信，这种情况下我们就需要更高级的设备了。</p><h3 id="集线器-Hub"><a href="#集线器-Hub" class="headerlink" title="集线器 Hub"></a>集线器 Hub</h3><p>中继器解决了两台设备远距离通信的问题，但是当多台设备需要互相通信时，需要在任意两台设备之间连接一条网线，网络拓扑是这样的：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    c2(B fas:fa-desktop)
+    c3(C fas:fa-desktop)
+
+    c1 --- c2
+    c1 --- c3
+    c2 --- c3
+%%</pre><p>网络中每增加一台设备，主机 A 就增加一条网线，这显然是现实的。为了解决这个问题，集线器被发明了。</p><p>集线器用最简单的方式解决了多台设备互相通信的问题。具体的做法是：集线器有多个端口，可以连接多个设备（如下图）。当一台设备发送了数据帧，集线器会将这个数据帧转发至其他左右的端口。</p><p>下图是一个集线器构成的网络拓扑，A 发送了一个数据帧给 C，这个数据先被集线器收到：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    h1(fas:fa-boxes 集线器)
+    c2(B fas:fa-desktop)
+    c3(C fas:fa-desktop)
+    c4(D fas:fa-desktop)
+    c1 --&gt; | 给 C 的消息 | h1
+    h1 --- c2
+    h1 --- c3
+    h1 --- c4
+%%</pre><p>集线器将消息发送至除 A 外的每一台设备：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    h1(fas:fa-boxes 集线器)
+    c2(B fas:fa-desktop)
+    c3(C fas:fa-desktop)
+    c4(D fas:fa-desktop)
+    c1 --- h1
+    h1 --&gt; | 给 C 的消息 | c2
+    h1 --&gt; | 给 C 的消息 | c3
+    h1 --&gt; | 给 C 的消息 | c4
+%%</pre><p>之后 B、D 会将不需要的消息丢弃掉，C 收到的消息会被正常处理。这个过程中 B、D 两个设备的带宽就被浪费掉了。<br>由于使用集线器的通讯方式是广播通信（数据会发给每一个连接到集线器的设备），因此还会有一定的安全隐患。</p><p>总结集线器：</p><ul><li>有多个端口，可以连接多台终端，让彼此存在互相通信的可能。</li><li>将一个端口的信号转发至其他所有的端口。</li><li>可以看成一个多端口的中继器。</li><li>缺陷<ul><li>网络规模较小。</li><li>集线器的最大问题是多设备共享带宽。因为集线器同一个时刻仅能够执行一个收 / 发任务，所以网络拓扑中的设备越多，每台设备分到的带宽就越小，限制了网络的扩展。</li><li>数据帧以广播的方式发送（会发送到每台设备上），有信息泄漏的风险。</li></ul></li></ul><h3 id="网桥-Bridge"><a href="#网桥-Bridge" class="headerlink" title="网桥 Bridge"></a>网桥 Bridge</h3><p>为了解决集线器构成的网络拓扑中规模较小的问题，网桥被发明出来了。</p><ul><li>至少有两端口。</li><li>集线器会对每个端口维护一个 MAC 地址列表。当某个端口连接的是主机时，记录的 MAC 地址就是该主机的 MAC 地址；当连接的是集线器时，记录的 MAC 地址就是集线器上连接的所有主机的 MAC 地址。</li><li>当网桥收到主机 / 集线器发来的数据帧时，会对比数据帧中的<strong>目的 MAC 地址</strong>，如果该地址不再对应端口的 MAC 地址表中，才会向另一个端口转发该数据帧。</li><li>相比于集线器连接的网络，可以减少无效的转发，提高效率。</li></ul><p>其网络拓扑如下 (以两个端口的网桥为例)：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    c2(B fas:fa-desktop)
+    c3(C fas:fa-desktop)
+    c4(D fas:fa-desktop)
+    c5(E fas:fa-desktop)
+    c6(F fas:fa-desktop)
+    c7(G fas:fa-desktop)
+    c8(H fas:fa-desktop)
+    h1(fas:fa-boxes 集线器 A)
+    h2(fas:fa-boxes 集线器 B)
+    b1(fas:fa-network-wired 网桥)
+    c1 --- h1
+    c2 --- h1
+    c3 --- h1
+    c4 --- h1
+    h1 --- b1 --- h2
+    h2 --- c5
+    h2 --- c6
+    h2 --- c7
+    h2 --- c8
+
+    com2(端口2:\nmacE,\nmacF,\nmacG,\nmacH,) 
+    com1(端口1:\nmacA,\nmacB,\nmacC,\nmacD,)
+    com1 -.- b1
+    b1 -.- com2
+
+    classDef comment fill:#fff,stroke:gray,stroke-dasharray: 5 5
+    class com1,com2 comment
+%%</pre><p>如图上：</p><ul><li>当 A 向 F 发送数据帧 <code>AtoF</code>。<ul><li><code>AtoF</code> 会现被 A 发送 集线器 A。</li><li>集线器 A 将 <code>AtoF</code> 发送到网桥（此时集线器 A 连接的是网桥的端口 1）。</li><li>网桥查看 F 是否在端口 1 对应的 MAC 表中存在：<ul><li>存在：网桥会丢弃该数据帧；</li><li>不存在；接下来查找其他端口的 MAC 表，看 F 是否在某个表中存在：<ul><li>存在：从这个端口中转发该数据帧。</li><li>不存在：则将 <code>AtoF</code> 从端口 1 以外的所有端口发送出去。（<strong>泛洪</strong>）</li></ul></li></ul></li><li>集线器 B 会将 <code>AtoF</code> 转发到 F 上，通信完成。</li></ul></li><li>另一种情况，当 B 向 D 发送数据帧：<code>BtoD</code>。<ul><li><code>BtoD</code> 会现被 B 发送 集线器 A。</li><li>集线器 A 将 <code>BtoD</code> 发送到网桥。</li><li>网桥会对查看端口 1 对应的 MAC 地址表，D 的地址在 MAC 地址表中，则网桥不做转发。</li></ul></li></ul><h4 id="网桥的mac地址表是怎么建立起来的？"><a href="#网桥的mac地址表是怎么建立起来的？" class="headerlink" title="网桥的mac地址表是怎么建立起来的？"></a>网桥的 mac 地址表是怎么建立起来的？</h4><p>还是以上面的过程为例：</p><ul><li>当网桥刚刚开机，两个端口对应的 mac 地址表都为空。</li><li>假设网桥从端口 1 中收到一个 AtoE 发出来的数据帧，此时网桥会执行两个动作：<ul><li>查看 E 的 MAC 地址时都在端口 1 的 MAC 表中；不在，于是向端口 2 转发该数据帧</li><li>取得数据帧中的<strong>源 MAC 地址（即 A）</strong>，将其加入到端口 1 的地址表中。</li></ul></li><li>假设此时网桥又从端口 1 收到一个 BtoA 的数据帧：<ul><li>比对目的地址 A 是否在对应的地址表中；在，于是丢弃该数据帧，<strong>不做转发</strong></li><li>将源地址 B 加入端口 1 的 MAC 地址表中。</li></ul></li><li>下次再有<strong>目的地址</strong>是 A 或者 B 的数据帧从<strong>端口 1</strong> 到达时，网桥就知道<strong>不应该</strong>转发该数据帧了。</li></ul><h4 id="网桥建立的网络拓扑存在的缺陷"><a href="#网桥建立的网络拓扑存在的缺陷" class="headerlink" title="网桥建立的网络拓扑存在的缺陷"></a>网桥建立的网络拓扑存在的缺陷</h4><p>相对于集线器，网桥极大的减少了广播数据，使得数据帧被限制在较小的范围内。同时提高了带宽的利用率。但是网桥并不是完美的。</p><ul><li>当 MAC 地址表为空时，网桥会转发收到的数据帧，使得该数据帧在网桥连接的网络上扩散，最终每台设备机器都会收到这个数据帧。</li><li>当网桥判断出目的 MAC 地址不在 MAC 表中时，会将数据帧发往桥的另一端。但是网桥并不知道另一端是否存在这个地址（事实上绝大部分时间都不在）。</li><li>在一些特殊的场景下，如广播 / 多播需求，网桥会将数据帧扩散到整个网络上，造成广播风暴。</li></ul><h3 id="交换机-Switch"><a href="#交换机-Switch" class="headerlink" title="交换机 Switch"></a>交换机 Switch</h3><ul><li>交换机是一种性能增强版的网桥。</li><li>交换机通常具有较多的端口，每两个端口都可以作为一组网桥来使用。交换机可以看做是一堆网桥的合集。</li><li>同网桥一样交换机也维护了端口到 MAC 地址的映射表</li></ul><p>两者在逻辑模型上并没有更多的区别。</p><h4 id="网桥、交换机与生成树协议"><a href="#网桥、交换机与生成树协议" class="headerlink" title="网桥、交换机与生成树协议"></a>网桥、交换机与生成树协议</h4><p>拓展一下上面的例子，把两个端口的网桥换成多端口网桥（交换机），会出现这样一种网络拓扑：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    c2(B fas:fa-desktop)
+    b1(fas:fa-network-wired 网桥1)
+    b2(fas:fa-network-wired 网桥2)
+    b3(fas:fa-network-wired 网桥3)
+    c1 --&gt; | AtoB| b1
+    b1 --- b2
+    b1 --- b3
+    b2 --- b3
+    b3 --- c2
+%%</pre><p>图中是一个三个网桥形成的环状结构，其中主机 A 发出一个数据帧 <code>AtoB</code>，根据上文的模型，B 的 MAC 地址不在网桥 1 左侧端口的 MAC 表中，网桥 1 会将 <code>AtoB</code> 转发至另外的两个端口：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    c2(B fas:fa-desktop)
+    b1(fas:fa-network-wired 网桥1)
+    b2(fas:fa-network-wired 网桥2)
+    b3(fas:fa-network-wired 网桥3)
+    c1 --- b1
+    b1 --&gt; | AtoB| b2
+    b1 --&gt; | AtoB| b3
+    b2 --- b3
+    b3 --- c2
+%%</pre><p>再下一步，网桥 2 将左侧端口收到的数据帧向右侧端口转发，同时网桥 3 将收到的数据帧向其余两个端口转发：</p><pre class="mermaid">flowchart LR
+    c1(A fas:fa-desktop)
+    c2(B fas:fa-desktop)
+    b1(fas:fa-network-wired 网桥1)
+    b2(fas:fa-network-wired 网桥2)
+    b3(fas:fa-network-wired 网桥3)
+    c1 --- b1
+    b1 --- b2
+    b1 --- b3
+    b2 -.-&gt; | AtoB| b3
+    b3 --&gt; | AtoB| c2
+    b3 -.-&gt; | AtoB| b2
+%%</pre><p>可以看出网桥 2 和网桥 3 会互相转发 AtoB 这个数据帧。如果不加干预的话，并且这个数据帧会一直在这个三个网桥形成的环中传递。</p><p>为了解决这个问题，网桥都具备一个 “破环功能”，该功能实现的原理是：最小生成树协议。这个协议详情本文不做说明，后面的 Blog 再写这个。</p></div><footer class="post-footer"><div class="post-copyright"><ul><li class="post-copyright-author"><strong>本文作者： </strong>Peng Zhao</li><li class="post-copyright-link"><strong>本文链接：</strong> <a href="https://ppzz.github.io/posts/c338/" title="网络是如何连接的：中继、集线器、交换机与网桥">https://ppzz.github.io/posts/c338/</a></li><li class="post-copyright-license"><strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="post-tags"><a href="/tags/%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" rel="tag"><i class="fa fa-tag"></i> 网络基础</a></div><div class="post-nav"><div class="post-nav-item"><a href="/posts/291/" rel="prev" title="netcat: 读 / 写网络数据的瑞士军刀"><i class="fa fa-chevron-left"></i> netcat: 读 / 写网络数据的瑞士军刀</a></div><div class="post-nav-item"><a href="/posts/96df/" rel="next" title="Golang 项目目录风格">Golang 项目目录风格 <i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><script>window.addEventListener("tabs:register",()=>{let{activeClass:t}=CONFIG.comments;if(CONFIG.comments.storage&&(t=localStorage.getItem("comments_active")||t),t){const e=document.querySelector(`a[href="#comment-${t}"]`);e&&e.click()}}),CONFIG.comments.storage&&window.addEventListener("tabs:click",t=>{t.target.matches(".tabs-comment .tab-content .tab-pane")&&(t=t.target.classList[1],localStorage.setItem("comments_active",t))})</script></div></main><footer class="footer"><div class="footer-inner"><div class="copyright">&copy; <span itemprop="copyrightYear">2021</span> <span class="with-love"><i class="fas fa-angle-double-right"></i> </span><span class="author" itemprop="copyrightHolder">Peng Zhao</span></div><div class="wordcount"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="fa fa-chart-line"></i> </span><span title="站点总字数">43k</span> </span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="fa fa-coffee"></i> </span><span title="站点阅读时长">39 分钟</span></span></div></div></footer><script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/local-search.js"></script><script>document.querySelectorAll(".mermaid").length&&NexT.utils.getScript("https://cdn.jsdelivr.net/npm/mermaid@8.9.1/dist/mermaid.min.js",()=>{mermaid.init({theme:"forest",logLevel:3,flowchart:{curve:"linear"},gantt:{axisFormat:"%m/%d/%Y"},sequence:{actorMargin:50}},".mermaid")},window.mermaid)</script><script src="https://cdn.jsdelivr.net/npm/quicklink@2.1.0/dist/quicklink.umd.js"></script><script>window.addEventListener("load",()=>{quicklink.listen({timeout:3e3,priority:!0,ignores:[i=>i.includes("#"),i=>"https://ppzz.github.io/posts/c338/"===i]})})</script></body></html>
