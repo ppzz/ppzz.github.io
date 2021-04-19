@@ -78,117 +78,103 @@
       </tags>
   </entry>
   <entry>
-    <title>Golang 项目目录风格</title>
-    <url>/posts/96df/</url>
-    <content><![CDATA[<p>总结的 Go Project 目录推荐风格。</p>
+    <title>netcat: 读 / 写网络数据的瑞士军刀</title>
+    <url>/posts/291/</url>
+    <content><![CDATA[<p>用 netcat 命令实现 TCP/UDP 的数据传输。</p>
 <span id="more"></span>
 
-<p>出自项目 <a href="https://github.com/golang-standards/project-layout">golang-standards/project-layout</a>，去掉一些冗余信息之后成文。</p>
-<p>写在前面：</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>功能</p>
+<p>在 shell 脚本中通过 TCP/UDP 协议读 / 写数据。</p>
+<p>例如可以实现</p>
 <ul>
-<li>这里描述的风格是一些常见的项目的代码组织布局，并非官方标准，事实上官方也没有规定标准。</li>
-<li>其目的是通过共识减少协作中的沟通成本，以提高开发 / 传播效率。</li>
-<li>仅作为推荐，应该自由的取舍。</li>
-<li>Go 1.14 以上请使用 <code>Go Modules</code> 管理项目。</li>
+<li>扫描端口</li>
+<li>聊天</li>
+<li>文件传送</li>
+<li>代理服务</li>
+<li>…</li>
 </ul>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>常见的目录结构：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── LICENSE.md</span><br><span class="line">├── Makefile</span><br><span class="line">├── api</span><br><span class="line">│&nbsp;&nbsp; ├── swagger</span><br><span class="line">│&nbsp;&nbsp; └── protobuf</span><br><span class="line">├── assets</span><br><span class="line">├── build</span><br><span class="line">│&nbsp;&nbsp; ├── ci</span><br><span class="line">│&nbsp;&nbsp; └── package</span><br><span class="line">├── cmd</span><br><span class="line">│&nbsp;&nbsp; ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; └── myapp2</span><br><span class="line">├── configs</span><br><span class="line">├── deployments</span><br><span class="line">├── docs</span><br><span class="line">├── examples</span><br><span class="line">├── githooks</span><br><span class="line">├── go.mod</span><br><span class="line">├── init</span><br><span class="line">├── internal</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│&nbsp;&nbsp; │   ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; │&nbsp;&nbsp; └── myapp2</span><br><span class="line">│&nbsp;&nbsp; └── pkg</span><br><span class="line">│&nbsp;&nbsp;     ├── apppkg1</span><br><span class="line">│&nbsp;&nbsp;     └── apppkg2</span><br><span class="line">├── pkg</span><br><span class="line">│&nbsp;&nbsp; ├── mypkg1</span><br><span class="line">│&nbsp;&nbsp; └── mypkg2</span><br><span class="line">├── scripts</span><br><span class="line">├── <span class="built_in">test</span></span><br><span class="line">├── third_party</span><br><span class="line">├── tools</span><br><span class="line">├── web</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│   │   └── api</span><br><span class="line">│&nbsp;&nbsp; ├── static</span><br><span class="line">│&nbsp;&nbsp; └── template</span><br><span class="line">└── website</span><br></pre></td></tr></tbody></table></figure>
-
 <hr>
-<h2 id="Go-核心代码相关目录"><a href="#Go-核心代码相关目录" class="headerlink" title="Go 核心代码相关目录"></a>Go 核心代码相关目录</h2><h3 id="cmd"><a href="#cmd" class="headerlink" title="cmd"></a><code>cmd</code></h3><p>项目编译出的可执行文件的目录，一般来说 cmd 下每一个 dir 都应该对应一个可执行文件。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── cmd</span><br><span class="line">│&nbsp;&nbsp; ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; └── myapp2</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="一些功能-demo"><a href="#一些功能-demo" class="headerlink" title="一些功能 demo"></a>一些功能 demo</h2><h3 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h3><p>检测机器打开的端口</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">nc -z -n -v  10.10.20.11  78-90</span><br></pre></td></tr></tbody></table></figure>
 
-<p>注意：</p>
-<ul>
-<li>cmd 中最好只防止程序的入口代码，保持 cmd 的代码简洁，通过调用 pkg 和 internal 目录下的代码来建立整个程序逻辑。</li>
-<li>一个子目录对应一个可执行文件。</li>
-<li>子目录名与可执行文件的名称相匹配 (例如，<code>/cmd/myapp1</code>)。</li>
-<li>在文件中只保留一个 main 函数是一种推荐的做法。</li>
-</ul>
-<h3 id="internal"><a href="#internal" class="headerlink" title="internal"></a><code>internal</code></h3><p>用来存放非共享的代码。go 的引用机制决定了 intelnal 目录中的代码只能够被 intelnal 下的内部代码引用。</p>
-<p>Go 1.4 关于 <a href="https://golang.org/doc/go1.4#internalpackages"><code>internal package 的说明</code></a> 。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── internal</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│&nbsp;&nbsp; │   ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; │&nbsp;&nbsp; └── myapp2</span><br><span class="line">│&nbsp;&nbsp; └── pkg</span><br><span class="line">│&nbsp;&nbsp;     ├── apppkg1</span><br><span class="line">│&nbsp;&nbsp;     └── apppkg2</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight shell"><table><tbody><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 输出</span></span><br><span class="line">10.10.20.11 80 (http) open</span><br></pre></td></tr></tbody></table></figure>
 
-<p>注意：</p>
 <ul>
-<li>用来存放非共享的代码。</li>
-<li>intelnal 目录并不只局限于根目录下的 internal 目录，还可以是项目目录树的任何 internal 目录。</li>
-<li>internal 下依然可以有语意化的目录组织形式，上例中 app 存放各 app 的代码，pkg 存放 app 之间的共享代码，但是这些共享代码不对项目外开放。</li>
+<li>-z 表示连接成功之后 马上断开连接</li>
+<li> -v verbose 详细输出</li>
+<li> -n 表示不要使用 DNS 反向查询 IP 的域名</li>
 </ul>
-<h3 id="pkg"><a href="#pkg" class="headerlink" title="pkg"></a><code>pkg</code></h3><p>用来存放可以对外部共享的库代码。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── pkg</span><br><span class="line">│&nbsp;&nbsp; ├── mypkg1</span><br><span class="line">│&nbsp;&nbsp; └── mypkg2</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="机器通信"><a href="#机器通信" class="headerlink" title="机器通信"></a>机器通信</h3><p>S,C 两台机器</p>
+<ul>
+<li>S: 10.10.20.11</li>
+<li>C: 10.10.20.12</li>
+</ul>
+<p>S 机器监听端口，C 机器在 S 启动之后建立连接：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l -k 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc -w 10 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
 
-<p>注意：</p>
 <ul>
-<li>供外部使用的代码最好具有完善的测试和文档。</li>
-<li>参考 Travis Jeffery 的 blog <a href="https://travisjeffery.com/b/2019/11/i-ll-take-pkg-over-internal/"><code>I'll take pkg over internal</code></a> 更深入的理解 pkg /internal 的使用方法。</li>
+<li>-l 保持连接，并且将数据输出到 stdout，并从 stdin 读取数据</li>
+<li> -k 强制待命，客户端断开之后服务器也不断开</li>
+<li> -w 设置连接断开时间（秒）</li>
 </ul>
-<h3 id="vendor"><a href="#vendor" class="headerlink" title="vendor"></a><code>vendor</code></h3><p>淘汰，不表。</p>
-<h2 id="服务应用程序目录"><a href="#服务应用程序目录" class="headerlink" title="服务应用程序目录"></a>服务应用程序目录</h2><h3 id="api"><a href="#api" class="headerlink" title="api"></a><code>api</code></h3><p>用来放置 API 的描述文件，如：OpenAPI/Swagger 文件，JSON Schema，protobuf 文件。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── api</span><br><span class="line">│&nbsp;&nbsp; ├── swagger</span><br><span class="line">│&nbsp;&nbsp; └── protobuf</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="传送文件-目录"><a href="#传送文件-目录" class="headerlink" title="传送文件/目录"></a>传送文件 / 目录</h3><h4 id="传送文件"><a href="#传送文件" class="headerlink" title="传送文件"></a>传送文件</h4><p>服务器 -&gt; 客户端：<br>S 作为服务器先启动，C 作为客户端后启动，下同</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 &lt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 10.10.20.11 1567 &gt; some.file</span><br></pre></td></tr></tbody></table></figure>
 
-<p>有关示例，请参见 <a href="https://github.com/golang-standards/project-layout/tree/master/api"><code>/api</code></a> 目录。</p>
-<h2 id="Web-应用程序目录"><a href="#Web-应用程序目录" class="headerlink" title="Web 应用程序目录"></a>Web 应用程序目录</h2><h3 id="web"><a href="#web" class="headerlink" title="/web"></a><code>/web</code></h3><p>特定于 Web 应用程序的组件：静态 Web 资产、服务器端模板和 SPAs。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── web</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│   │   └── api</span><br><span class="line">│&nbsp;&nbsp; ├── static</span><br><span class="line">│&nbsp;&nbsp; └── template</span><br></pre></td></tr></tbody></table></figure>
+<p>机器 C 上，较新版 nc 运行完毕之后不会断开连接，根据文档，使用下两个参数之一可以在接受完毕之后断开连接：</p>
+<ul>
+<li>-N  遇到 EOF 立即断开连接</li>
+<li> -q 0 遇到 EOF 等待 0 秒之后断开连接</li>
+</ul>
+<p>但我在 ubuntu20.04 上  <code>OpenBSD netcat (Debian patchlevel 1.206-1ubuntu1)</code> 这个版本上没有测试成功。</p>
+<p>客户端 -&gt; 服务器：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567  &gt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc -N  10.10.20.11 1567 &lt; dl.sh</span><br></pre></td></tr></tbody></table></figure>
 
-<h2 id="通用应用目录"><a href="#通用应用目录" class="headerlink" title="通用应用目录"></a>通用应用目录</h2><h3 id="configs"><a href="#configs" class="headerlink" title="/configs"></a><code>/configs</code></h3><p>配置文件模板或默认配置。</p>
-<p>将你的 <code>confd</code> 或 <code>consul-template</code> 模板文件放在这里。</p>
-<h3 id="init"><a href="#init" class="headerlink" title="/init"></a><code>/init</code></h3><p>系统初始化工具，如：systemd、process manager、supervisor、等配置</p>
-<h3 id="scripts"><a href="#scripts" class="headerlink" title="/scripts"></a><code>/scripts</code></h3><p>构建、安装、分析等的脚本，这些脚本并不是被直接执行，而是应该在 Makefile 中被触发。</p>
-<p>示例见  <a href="https://github.com/golang-standards/project-layout/blob/master/scripts/README.md"><code>scripts</code></a> 目录。</p>
-<h3 id="build"><a href="#build" class="headerlink" title="/build"></a><code>/build</code></h3><p>构建和 CI 等。</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── build</span><br><span class="line">│&nbsp;&nbsp; ├── ci</span><br><span class="line">│&nbsp;&nbsp; └── package</span><br></pre></td></tr></tbody></table></figure>
+<p>这里的 <code>-q</code> <code>-N</code> 参数可以正常工作</p>
+<h4 id="传送目录"><a href="#传送目录" class="headerlink" title="传送目录"></a>传送目录</h4><p>服务器 -&gt; 客户端：<br>传递目录需要将目录打包成一个文件再传递</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">tar -cvf - test-nc | nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 10.10.20.11 1567 | tar -xvf -</span><br></pre></td></tr></tbody></table></figure>
 
-<p>注意：</p>
+<p>同上，这里客户端接受完目录之后不会自动退出</p>
+<p>客户端 -&gt; 服务器：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 | tar -xvf -</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">tar -cvf - test-nc | nc 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="传送加密文件"><a href="#传送加密文件" class="headerlink" title="传送加密文件"></a>传送加密文件</h4><p>客户端 -&gt; 服务器</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 | mcrypt -m ecb -F -k password -q -d &gt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">mcrypt -m ecb -F -k password -q &lt; some.file  | nc -N 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
+
+<p>mcrpyt 参数</p>
 <ul>
-<li>package 目录中放置包配置脚本，如：docker，AMI，deb，pkg 之类。</li>
-<li>ci 目录放置 ci 工具需要的配置和脚本。</li>
-<li>像是 travisCI 对位置要求较高的工具，可以尝试使用软连接将脚本链接到指定的位置。</li>
+<li>-m 模式</li>
+<li> -F 输出到 stdout</li>
+<li>-k 密码</li>
+<li> -q 安静模式，忽略警告信息</li>
 </ul>
-<h3 id="deployments"><a href="#deployments" class="headerlink" title="/deployments"></a><code>/deployments</code></h3><p>放置部署配置和脚本，如：docker-compose，kubernetes/helm，mesos，helm、mesos、terraform、bosh 等<br>在 kubernetes 的环境中，可能被命名为 deploy。</p>
-<h3 id="test"><a href="#test" class="headerlink" title="/test"></a><code>/test</code></h3><p>放置外部测试和测试数据。</p>
-<p>注意：</p>
-<ul>
-<li>go 会忽略 <code>/test/data</code> 或 <code>/test/testdata</code> 目录，可以用他们放置测试数据。</li>
-<li>go 还会忽略 “.” 或 “_” 开头的文件或目录。</li>
-</ul>
-<p>示例见  <a href="https://github.com/golang-standards/project-layout/blob/master/test/README.md"><code>/test</code></a> 目录。</p>
-<h2 id="其他目录"><a href="#其他目录" class="headerlink" title="其他目录"></a>其他目录</h2><h3 id="docs"><a href="#docs" class="headerlink" title="/docs"></a><code>/docs</code></h3><p>设计和用户文档 (不包含 godoc 生成的文档)。</p>
-<p>有关示例，请参阅 <a href="https://github.com/golang-standards/project-layout/blob/master/docs/README.md"><code>/docs</code></a> 目录。</p>
-<h3 id="tools"><a href="#tools" class="headerlink" title="/tools"></a><code>/tools</code></h3><p>这个项目的辅助工具。工具可以从 <code>/pkg</code> 和 <code>/internal</code> 目录导入代码。</p>
-<p>示例见 <a href="https://github.com/golang-standards/project-layout/blob/master/tools/README.md"><code>/tools</code></a> 目录。</p>
-<h3 id="examples"><a href="#examples" class="headerlink" title="/examples"></a><code>/examples</code></h3><p>你的应用程序和 / 或公共库的示例。</p>
-<p>示例见 <a href="https://github.com/golang-standards/project-layout/blob/master/examples/README.md"><code>/examples</code></a> 目录。</p>
-<h3 id="third-party"><a href="#third-party" class="headerlink" title="/third_party"></a><code>/third_party</code></h3><p>外部辅助工具，分叉代码和其他第三方工具 (例如 Swagger UI)。</p>
-<h3 id="githooks"><a href="#githooks" class="headerlink" title="/githooks"></a><code>/githooks</code></h3><p>Git hooks。</p>
-<h3 id="assets"><a href="#assets" class="headerlink" title="/assets"></a><code>/assets</code></h3><p>与存储库一起使用的其他资源 (图像、logo 等)。</p>
-<h3 id="website"><a href="#website" class="headerlink" title="/website"></a><code>/website</code></h3><p>如果你不使用 Github 页面，则在这里放置项目的网站数据。</p>
-<p>有关示例，请参见 <a href="website/README.md"><code>/website</code></a> 目录。</p>
-<h2 id="不推荐的目录"><a href="#不推荐的目录" class="headerlink" title="不推荐的目录"></a>不推荐的目录</h2><h3 id="src"><a href="#src" class="headerlink" title="/src"></a><code>/src</code></h3><p>src 是很有 java 背景的文件夹，如果可以，尽量不要采用这种风格。</p>
-<hr>
-<h2 id="关于代码风格的一些参考"><a href="#关于代码风格的一些参考" class="headerlink" title="关于代码风格的一些参考"></a>关于代码风格的一些参考</h2><p>如果需要命名、格式和样式方面的帮助，运行 <a href="https://golang.org/cmd/gofmt/"><code>gofmt</code></a> 和 <a href="https://github.com/golang/lint"><code>golint</code></a> 。</p>
-<p>最好多看看 Go 代码风格的建议:</p>
-<ul>
-<li><a href="https://talks.golang.org/2014/names.slide">talks.golang.org/2014/names</a></li>
-<li><a href="https://golang.org/doc/effective_go.html#names">golang.org/doc/effective_go.html#names</a></li>
-<li><a href="https://blog.golang.org/package-names">blog.golang.org/package-names</a></li>
-<li><a href="https://github.com/golang/go/wiki/CodeReviewComments">github.com/golang/go/wiki/CodeReviewComments</a></li>
-<li><a href="https://rakyll.org/style-packages">Style guideline for Go packages</a> (rakyll/JBD)</li>
-</ul>
-<p>参见 <a href="https://medium.com/golang-learn/go-project-layout-e5213cdcfaa2"><code>Go Project Layout</code></a> 了解更多的信息。</p>
-<p>更多关于包的命名和组织以及其他代码结构的建议:</p>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=PTE4VJIdHPg">GopherCon EU 2018: Peter Bourgon - Best Practices for Industrial Programming</a></li>
-<li><a href="https://www.youtube.com/watch?v=MzTcsI6tn-0">GopherCon Russia 2018: Ashley McNamara + Brian Ketelsen - Go best practices.</a></li>
-<li><a href="https://www.youtube.com/watch?v=ltqV6pDKZD8">GopherCon 2017: Edward Muller - Go Anti-Patterns</a></li>
-<li><a href="https://www.youtube.com/watch?v=oL6JBUk6tj0">GopherCon 2018: Kat Zien - How Do You Structure Your Go Apps</a></li>
-</ul>
+<h3 id="克隆硬盘"><a href="#克隆硬盘" class="headerlink" title="克隆硬盘"></a>克隆硬盘</h3><p>服务器 -&gt; 客户端</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S:</span></span><br><span class="line">dd <span class="keyword">if</span>=/dev/sda | nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 127.0.0.1 1567 | dd of=dev/sda`</span><br></pre></td></tr></tbody></table></figure>
+
+<p>dd 会读取硬盘的原始数据，会随着分区表拷贝所有的信息</p>
+<h3 id="代理服务"><a href="#代理服务" class="headerlink" title="代理服务"></a>代理服务</h3><h4 id="代理ssh流量"><a href="#代理ssh流量" class="headerlink" title="代理ssh流量"></a>代理 ssh 流量</h4><p>客户端 操作 服务器：</p>
+<p>打开一个 shell，如果我们没有权限安装 ssh 也可以用 netcat 创建远程 shell</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">mkfifo /tmp/tmp_fifo</span><br><span class="line">cat /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 | nc -l 1567 &gt; /tmp/tmp_fifo</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 127.0.0.1 1567</span><br></pre></td></tr></tbody></table></figure>
+
+<p>会创建一个连接，并且在连接成功时知性 /bin/bash</p>
+<ol>
+<li>服务器从网络接受输入写入 fifo 文件中</li>
+<li> cat 命令读取 fifo 文件内容兵发送至 bash</li>
+<li>bash 的输出重定向至 nc</li>
+<li>nc 将数据发送至 client</li>
+<li> 其中：fifo 使读取等待，让这个过程可以一直执行，</li>
+</ol>
+<p>利用这个 nc + fifo 还可以实现创建 HTTP 代理服务器等功能。</p>
+<p>服务器 操作 客户端：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">mkfifo /tmp/tmp_fifo</span><br><span class="line">cat /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 |nc 10.10.20.11 1567 &gt; /tmp/tmp_fifo</span><br></pre></td></tr></tbody></table></figure>
+
+<p>原理同上；用于 client 位于内网或者防火墙背后，client 连接上 server 之后，可以使用 server 来反向操作 client 的 shell</p>
 ]]></content>
       <categories>
-        <category>Golang</category>
+        <category>Linux</category>
+        <category>Command</category>
       </categories>
       <tags>
-        <tag>Golang</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -441,103 +427,117 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
       </tags>
   </entry>
   <entry>
-    <title>netcat: 读 / 写网络数据的瑞士军刀</title>
-    <url>/posts/291/</url>
-    <content><![CDATA[<p>用 netcat 命令实现 TCP/UDP 的数据传输。</p>
+    <title>Golang 项目目录风格</title>
+    <url>/posts/96df/</url>
+    <content><![CDATA[<p>总结的 Go Project 目录推荐风格。</p>
 <span id="more"></span>
 
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>功能</p>
-<p>在 shell 脚本中通过 TCP/UDP 协议读 / 写数据。</p>
-<p>例如可以实现</p>
+<p>出自项目 <a href="https://github.com/golang-standards/project-layout">golang-standards/project-layout</a>，去掉一些冗余信息之后成文。</p>
+<p>写在前面：</p>
 <ul>
-<li>扫描端口</li>
-<li>聊天</li>
-<li>文件传送</li>
-<li>代理服务</li>
-<li>…</li>
+<li>这里描述的风格是一些常见的项目的代码组织布局，并非官方标准，事实上官方也没有规定标准。</li>
+<li>其目的是通过共识减少协作中的沟通成本，以提高开发 / 传播效率。</li>
+<li>仅作为推荐，应该自由的取舍。</li>
+<li>Go 1.14 以上请使用 <code>Go Modules</code> 管理项目。</li>
 </ul>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>常见的目录结构：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── LICENSE.md</span><br><span class="line">├── Makefile</span><br><span class="line">├── api</span><br><span class="line">│&nbsp;&nbsp; ├── swagger</span><br><span class="line">│&nbsp;&nbsp; └── protobuf</span><br><span class="line">├── assets</span><br><span class="line">├── build</span><br><span class="line">│&nbsp;&nbsp; ├── ci</span><br><span class="line">│&nbsp;&nbsp; └── package</span><br><span class="line">├── cmd</span><br><span class="line">│&nbsp;&nbsp; ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; └── myapp2</span><br><span class="line">├── configs</span><br><span class="line">├── deployments</span><br><span class="line">├── docs</span><br><span class="line">├── examples</span><br><span class="line">├── githooks</span><br><span class="line">├── go.mod</span><br><span class="line">├── init</span><br><span class="line">├── internal</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│&nbsp;&nbsp; │   ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; │&nbsp;&nbsp; └── myapp2</span><br><span class="line">│&nbsp;&nbsp; └── pkg</span><br><span class="line">│&nbsp;&nbsp;     ├── apppkg1</span><br><span class="line">│&nbsp;&nbsp;     └── apppkg2</span><br><span class="line">├── pkg</span><br><span class="line">│&nbsp;&nbsp; ├── mypkg1</span><br><span class="line">│&nbsp;&nbsp; └── mypkg2</span><br><span class="line">├── scripts</span><br><span class="line">├── <span class="built_in">test</span></span><br><span class="line">├── third_party</span><br><span class="line">├── tools</span><br><span class="line">├── web</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│   │   └── api</span><br><span class="line">│&nbsp;&nbsp; ├── static</span><br><span class="line">│&nbsp;&nbsp; └── template</span><br><span class="line">└── website</span><br></pre></td></tr></tbody></table></figure>
+
 <hr>
-<h2 id="一些功能-demo"><a href="#一些功能-demo" class="headerlink" title="一些功能 demo"></a>一些功能 demo</h2><h3 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h3><p>检测机器打开的端口</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">nc -z -n -v  10.10.20.11  78-90</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="Go-核心代码相关目录"><a href="#Go-核心代码相关目录" class="headerlink" title="Go 核心代码相关目录"></a>Go 核心代码相关目录</h2><h3 id="cmd"><a href="#cmd" class="headerlink" title="cmd"></a><code>cmd</code></h3><p>项目编译出的可执行文件的目录，一般来说 cmd 下每一个 dir 都应该对应一个可执行文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── cmd</span><br><span class="line">│&nbsp;&nbsp; ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; └── myapp2</span><br></pre></td></tr></tbody></table></figure>
 
-<figure class="highlight shell"><table><tbody><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 输出</span></span><br><span class="line">10.10.20.11 80 (http) open</span><br></pre></td></tr></tbody></table></figure>
-
+<p>注意：</p>
 <ul>
-<li>-z 表示连接成功之后 马上断开连接</li>
-<li> -v verbose 详细输出</li>
-<li> -n 表示不要使用 DNS 反向查询 IP 的域名</li>
+<li>cmd 中最好只防止程序的入口代码，保持 cmd 的代码简洁，通过调用 pkg 和 internal 目录下的代码来建立整个程序逻辑。</li>
+<li>一个子目录对应一个可执行文件。</li>
+<li>子目录名与可执行文件的名称相匹配 (例如，<code>/cmd/myapp1</code>)。</li>
+<li>在文件中只保留一个 main 函数是一种推荐的做法。</li>
 </ul>
-<h3 id="机器通信"><a href="#机器通信" class="headerlink" title="机器通信"></a>机器通信</h3><p>S,C 两台机器</p>
+<h3 id="internal"><a href="#internal" class="headerlink" title="internal"></a><code>internal</code></h3><p>用来存放非共享的代码。go 的引用机制决定了 intelnal 目录中的代码只能够被 intelnal 下的内部代码引用。</p>
+<p>Go 1.4 关于 <a href="https://golang.org/doc/go1.4#internalpackages"><code>internal package 的说明</code></a> 。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── internal</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│&nbsp;&nbsp; │   ├── myapp1</span><br><span class="line">│&nbsp;&nbsp; │&nbsp;&nbsp; └── myapp2</span><br><span class="line">│&nbsp;&nbsp; └── pkg</span><br><span class="line">│&nbsp;&nbsp;     ├── apppkg1</span><br><span class="line">│&nbsp;&nbsp;     └── apppkg2</span><br></pre></td></tr></tbody></table></figure>
+
+<p>注意：</p>
 <ul>
-<li>S: 10.10.20.11</li>
-<li>C: 10.10.20.12</li>
+<li>用来存放非共享的代码。</li>
+<li>intelnal 目录并不只局限于根目录下的 internal 目录，还可以是项目目录树的任何 internal 目录。</li>
+<li>internal 下依然可以有语意化的目录组织形式，上例中 app 存放各 app 的代码，pkg 存放 app 之间的共享代码，但是这些共享代码不对项目外开放。</li>
 </ul>
-<p>S 机器监听端口，C 机器在 S 启动之后建立连接：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l -k 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc -w 10 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="pkg"><a href="#pkg" class="headerlink" title="pkg"></a><code>pkg</code></h3><p>用来存放可以对外部共享的库代码。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── pkg</span><br><span class="line">│&nbsp;&nbsp; ├── mypkg1</span><br><span class="line">│&nbsp;&nbsp; └── mypkg2</span><br></pre></td></tr></tbody></table></figure>
 
+<p>注意：</p>
 <ul>
-<li>-l 保持连接，并且将数据输出到 stdout，并从 stdin 读取数据</li>
-<li> -k 强制待命，客户端断开之后服务器也不断开</li>
-<li> -w 设置连接断开时间（秒）</li>
+<li>供外部使用的代码最好具有完善的测试和文档。</li>
+<li>参考 Travis Jeffery 的 blog <a href="https://travisjeffery.com/b/2019/11/i-ll-take-pkg-over-internal/"><code>I'll take pkg over internal</code></a> 更深入的理解 pkg /internal 的使用方法。</li>
 </ul>
-<h3 id="传送文件-目录"><a href="#传送文件-目录" class="headerlink" title="传送文件/目录"></a>传送文件 / 目录</h3><h4 id="传送文件"><a href="#传送文件" class="headerlink" title="传送文件"></a>传送文件</h4><p>服务器 -&gt; 客户端：<br>S 作为服务器先启动，C 作为客户端后启动，下同</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 &lt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 10.10.20.11 1567 &gt; some.file</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="vendor"><a href="#vendor" class="headerlink" title="vendor"></a><code>vendor</code></h3><p>淘汰，不表。</p>
+<h2 id="服务应用程序目录"><a href="#服务应用程序目录" class="headerlink" title="服务应用程序目录"></a>服务应用程序目录</h2><h3 id="api"><a href="#api" class="headerlink" title="api"></a><code>api</code></h3><p>用来放置 API 的描述文件，如：OpenAPI/Swagger 文件，JSON Schema，protobuf 文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── api</span><br><span class="line">│&nbsp;&nbsp; ├── swagger</span><br><span class="line">│&nbsp;&nbsp; └── protobuf</span><br></pre></td></tr></tbody></table></figure>
 
-<p>机器 C 上，较新版 nc 运行完毕之后不会断开连接，根据文档，使用下两个参数之一可以在接受完毕之后断开连接：</p>
+<p>有关示例，请参见 <a href="https://github.com/golang-standards/project-layout/tree/master/api"><code>/api</code></a> 目录。</p>
+<h2 id="Web-应用程序目录"><a href="#Web-应用程序目录" class="headerlink" title="Web 应用程序目录"></a>Web 应用程序目录</h2><h3 id="web"><a href="#web" class="headerlink" title="/web"></a><code>/web</code></h3><p>特定于 Web 应用程序的组件：静态 Web 资产、服务器端模板和 SPAs。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── web</span><br><span class="line">│&nbsp;&nbsp; ├── app</span><br><span class="line">│   │   └── api</span><br><span class="line">│&nbsp;&nbsp; ├── static</span><br><span class="line">│&nbsp;&nbsp; └── template</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="通用应用目录"><a href="#通用应用目录" class="headerlink" title="通用应用目录"></a>通用应用目录</h2><h3 id="configs"><a href="#configs" class="headerlink" title="/configs"></a><code>/configs</code></h3><p>配置文件模板或默认配置。</p>
+<p>将你的 <code>confd</code> 或 <code>consul-template</code> 模板文件放在这里。</p>
+<h3 id="init"><a href="#init" class="headerlink" title="/init"></a><code>/init</code></h3><p>系统初始化工具，如：systemd、process manager、supervisor、等配置</p>
+<h3 id="scripts"><a href="#scripts" class="headerlink" title="/scripts"></a><code>/scripts</code></h3><p>构建、安装、分析等的脚本，这些脚本并不是被直接执行，而是应该在 Makefile 中被触发。</p>
+<p>示例见  <a href="https://github.com/golang-standards/project-layout/blob/master/scripts/README.md"><code>scripts</code></a> 目录。</p>
+<h3 id="build"><a href="#build" class="headerlink" title="/build"></a><code>/build</code></h3><p>构建和 CI 等。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── build</span><br><span class="line">│&nbsp;&nbsp; ├── ci</span><br><span class="line">│&nbsp;&nbsp; └── package</span><br></pre></td></tr></tbody></table></figure>
+
+<p>注意：</p>
 <ul>
-<li>-N  遇到 EOF 立即断开连接</li>
-<li> -q 0 遇到 EOF 等待 0 秒之后断开连接</li>
+<li>package 目录中放置包配置脚本，如：docker，AMI，deb，pkg 之类。</li>
+<li>ci 目录放置 ci 工具需要的配置和脚本。</li>
+<li>像是 travisCI 对位置要求较高的工具，可以尝试使用软连接将脚本链接到指定的位置。</li>
 </ul>
-<p>但我在 ubuntu20.04 上  <code>OpenBSD netcat (Debian patchlevel 1.206-1ubuntu1)</code> 这个版本上没有测试成功。</p>
-<p>客户端 -&gt; 服务器：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567  &gt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc -N  10.10.20.11 1567 &lt; dl.sh</span><br></pre></td></tr></tbody></table></figure>
-
-<p>这里的 <code>-q</code> <code>-N</code> 参数可以正常工作</p>
-<h4 id="传送目录"><a href="#传送目录" class="headerlink" title="传送目录"></a>传送目录</h4><p>服务器 -&gt; 客户端：<br>传递目录需要将目录打包成一个文件再传递</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">tar -cvf - test-nc | nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 10.10.20.11 1567 | tar -xvf -</span><br></pre></td></tr></tbody></table></figure>
-
-<p>同上，这里客户端接受完目录之后不会自动退出</p>
-<p>客户端 -&gt; 服务器：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 | tar -xvf -</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">tar -cvf - test-nc | nc 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
-
-<h4 id="传送加密文件"><a href="#传送加密文件" class="headerlink" title="传送加密文件"></a>传送加密文件</h4><p>客户端 -&gt; 服务器</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567 | mcrypt -m ecb -F -k password -q -d &gt; some.file</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">mcrypt -m ecb -F -k password -q &lt; some.file  | nc -N 10.10.20.11 1567</span><br></pre></td></tr></tbody></table></figure>
-
-<p>mcrpyt 参数</p>
+<h3 id="deployments"><a href="#deployments" class="headerlink" title="/deployments"></a><code>/deployments</code></h3><p>放置部署配置和脚本，如：docker-compose，kubernetes/helm，mesos，helm、mesos、terraform、bosh 等<br>在 kubernetes 的环境中，可能被命名为 deploy。</p>
+<h3 id="test"><a href="#test" class="headerlink" title="/test"></a><code>/test</code></h3><p>放置外部测试和测试数据。</p>
+<p>注意：</p>
 <ul>
-<li>-m 模式</li>
-<li> -F 输出到 stdout</li>
-<li>-k 密码</li>
-<li> -q 安静模式，忽略警告信息</li>
+<li>go 会忽略 <code>/test/data</code> 或 <code>/test/testdata</code> 目录，可以用他们放置测试数据。</li>
+<li>go 还会忽略 “.” 或 “_” 开头的文件或目录。</li>
 </ul>
-<h3 id="克隆硬盘"><a href="#克隆硬盘" class="headerlink" title="克隆硬盘"></a>克隆硬盘</h3><p>服务器 -&gt; 客户端</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S:</span></span><br><span class="line">dd <span class="keyword">if</span>=/dev/sda | nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 127.0.0.1 1567 | dd of=dev/sda`</span><br></pre></td></tr></tbody></table></figure>
-
-<p>dd 会读取硬盘的原始数据，会随着分区表拷贝所有的信息</p>
-<h3 id="代理服务"><a href="#代理服务" class="headerlink" title="代理服务"></a>代理服务</h3><h4 id="代理ssh流量"><a href="#代理ssh流量" class="headerlink" title="代理ssh流量"></a>代理 ssh 流量</h4><p>客户端 操作 服务器：</p>
-<p>打开一个 shell，如果我们没有权限安装 ssh 也可以用 netcat 创建远程 shell</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">mkfifo /tmp/tmp_fifo</span><br><span class="line">cat /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 | nc -l 1567 &gt; /tmp/tmp_fifo</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">nc 127.0.0.1 1567</span><br></pre></td></tr></tbody></table></figure>
-
-<p>会创建一个连接，并且在连接成功时知性 /bin/bash</p>
-<ol>
-<li>服务器从网络接受输入写入 fifo 文件中</li>
-<li> cat 命令读取 fifo 文件内容兵发送至 bash</li>
-<li>bash 的输出重定向至 nc</li>
-<li>nc 将数据发送至 client</li>
-<li> 其中：fifo 使读取等待，让这个过程可以一直执行，</li>
-</ol>
-<p>利用这个 nc + fifo 还可以实现创建 HTTP 代理服务器等功能。</p>
-<p>服务器 操作 客户端：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># S</span></span><br><span class="line">nc -l 1567</span><br><span class="line"><span class="comment"># C</span></span><br><span class="line">mkfifo /tmp/tmp_fifo</span><br><span class="line">cat /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 |nc 10.10.20.11 1567 &gt; /tmp/tmp_fifo</span><br></pre></td></tr></tbody></table></figure>
-
-<p>原理同上；用于 client 位于内网或者防火墙背后，client 连接上 server 之后，可以使用 server 来反向操作 client 的 shell</p>
+<p>示例见  <a href="https://github.com/golang-standards/project-layout/blob/master/test/README.md"><code>/test</code></a> 目录。</p>
+<h2 id="其他目录"><a href="#其他目录" class="headerlink" title="其他目录"></a>其他目录</h2><h3 id="docs"><a href="#docs" class="headerlink" title="/docs"></a><code>/docs</code></h3><p>设计和用户文档 (不包含 godoc 生成的文档)。</p>
+<p>有关示例，请参阅 <a href="https://github.com/golang-standards/project-layout/blob/master/docs/README.md"><code>/docs</code></a> 目录。</p>
+<h3 id="tools"><a href="#tools" class="headerlink" title="/tools"></a><code>/tools</code></h3><p>这个项目的辅助工具。工具可以从 <code>/pkg</code> 和 <code>/internal</code> 目录导入代码。</p>
+<p>示例见 <a href="https://github.com/golang-standards/project-layout/blob/master/tools/README.md"><code>/tools</code></a> 目录。</p>
+<h3 id="examples"><a href="#examples" class="headerlink" title="/examples"></a><code>/examples</code></h3><p>你的应用程序和 / 或公共库的示例。</p>
+<p>示例见 <a href="https://github.com/golang-standards/project-layout/blob/master/examples/README.md"><code>/examples</code></a> 目录。</p>
+<h3 id="third-party"><a href="#third-party" class="headerlink" title="/third_party"></a><code>/third_party</code></h3><p>外部辅助工具，分叉代码和其他第三方工具 (例如 Swagger UI)。</p>
+<h3 id="githooks"><a href="#githooks" class="headerlink" title="/githooks"></a><code>/githooks</code></h3><p>Git hooks。</p>
+<h3 id="assets"><a href="#assets" class="headerlink" title="/assets"></a><code>/assets</code></h3><p>与存储库一起使用的其他资源 (图像、logo 等)。</p>
+<h3 id="website"><a href="#website" class="headerlink" title="/website"></a><code>/website</code></h3><p>如果你不使用 Github 页面，则在这里放置项目的网站数据。</p>
+<p>有关示例，请参见 <a href="website/README.md"><code>/website</code></a> 目录。</p>
+<h2 id="不推荐的目录"><a href="#不推荐的目录" class="headerlink" title="不推荐的目录"></a>不推荐的目录</h2><h3 id="src"><a href="#src" class="headerlink" title="/src"></a><code>/src</code></h3><p>src 是很有 java 背景的文件夹，如果可以，尽量不要采用这种风格。</p>
+<hr>
+<h2 id="关于代码风格的一些参考"><a href="#关于代码风格的一些参考" class="headerlink" title="关于代码风格的一些参考"></a>关于代码风格的一些参考</h2><p>如果需要命名、格式和样式方面的帮助，运行 <a href="https://golang.org/cmd/gofmt/"><code>gofmt</code></a> 和 <a href="https://github.com/golang/lint"><code>golint</code></a> 。</p>
+<p>最好多看看 Go 代码风格的建议:</p>
+<ul>
+<li><a href="https://talks.golang.org/2014/names.slide">talks.golang.org/2014/names</a></li>
+<li><a href="https://golang.org/doc/effective_go.html#names">golang.org/doc/effective_go.html#names</a></li>
+<li><a href="https://blog.golang.org/package-names">blog.golang.org/package-names</a></li>
+<li><a href="https://github.com/golang/go/wiki/CodeReviewComments">github.com/golang/go/wiki/CodeReviewComments</a></li>
+<li><a href="https://rakyll.org/style-packages">Style guideline for Go packages</a> (rakyll/JBD)</li>
+</ul>
+<p>参见 <a href="https://medium.com/golang-learn/go-project-layout-e5213cdcfaa2"><code>Go Project Layout</code></a> 了解更多的信息。</p>
+<p>更多关于包的命名和组织以及其他代码结构的建议:</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=PTE4VJIdHPg">GopherCon EU 2018: Peter Bourgon - Best Practices for Industrial Programming</a></li>
+<li><a href="https://www.youtube.com/watch?v=MzTcsI6tn-0">GopherCon Russia 2018: Ashley McNamara + Brian Ketelsen - Go best practices.</a></li>
+<li><a href="https://www.youtube.com/watch?v=ltqV6pDKZD8">GopherCon 2017: Edward Muller - Go Anti-Patterns</a></li>
+<li><a href="https://www.youtube.com/watch?v=oL6JBUk6tj0">GopherCon 2018: Kat Zien - How Do You Structure Your Go Apps</a></li>
+</ul>
 ]]></content>
       <categories>
-        <category>Linux</category>
-        <category>Command</category>
+        <category>Golang</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
+        <tag>Golang</tag>
       </tags>
   </entry>
   <entry>
