@@ -45,18 +45,18 @@
 <li>可以通过  <code>ssh myserver</code> 这样的别名登录，避免每次输入过长的信息</li>
 </ul>
 <p>编辑客户机的  <code>.ssh/config</code> 文件，写入以下配置：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">Host my_server</span><br><span class="line">    Hostname XX.XX.XX.XX</span><br><span class="line">    Port 22</span><br><span class="line">    User penn</span><br><span class="line">    IdentityFile ~/.ssh/my_private_key</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">Host my_server</span><br><span class="line">    Hostname XX.XX.XX.XX</span><br><span class="line">    Port 22</span><br><span class="line">    User penn</span><br><span class="line">    IdentityFile ~/.ssh/my_private_key</span><br></pre></td></tr></tbody></table></figure>
 
 <p>之后可以通过 <code>ssh my_server</code> 登录机器。</p>
 <h3 id="sudo命令免密码"><a href="#sudo命令免密码" class="headerlink" title="sudo命令免密码"></a>sudo 命令免密码</h3><p>使用 <code>visudo</code> 命令，编辑配置文件，写入以下行：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">penn    ALL=(ALL) NOPASSWD:ALL</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">penn    ALL=(ALL) NOPASSWD:ALL</span><br></pre></td></tr></tbody></table></figure>
 
 <p>可以实现 <code>penn</code> 用户使用 <code>sudo</code> 命令不需要输入密码。<br>还可以通过 <code>visudo</code> 修改用户组设置实现 sudo 用户组使用 <code>sudo</code> 命令都不需要输入密码。见下：</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># 原数据： %sudo ALL=(ALL:ALL) ALL，修改为以下：</span></span><br><span class="line">%sudo ALL=(ALL:ALL) NOPASSWD: ALL</span><br></pre></td></tr></tbody></table></figure>
 
 <p>注意：用户的配置如果放在用户组的配置之前，可能会被用户组的配置覆盖掉。可以将这个配置稍微靠后放。</p>
 <h3 id="禁止root登录，禁止密码登录，开启公钥登录，更改端口"><a href="#禁止root登录，禁止密码登录，开启公钥登录，更改端口" class="headerlink" title="禁止root登录，禁止密码登录，开启公钥登录，更改端口"></a>禁止 root 登录，禁止密码登录，开启公钥登录，更改端口</h3><p><code>sudo vim /etc/ssh/sshd_config</code></p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">Port 8022                                   # 端口</span><br><span class="line">PasswordAuthentication no                   # 禁止密码登录</span><br><span class="line">PubkeyAuthentication yes                    # 公钥登录</span><br><span class="line">AuthorizedKeysFile   .ssh/authorized_keys   # 公钥路径</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">Port 8022                                   # 端口</span><br><span class="line">PasswordAuthentication no                   # 禁止密码登录</span><br><span class="line">PubkeyAuthentication yes                    # 公钥登录</span><br><span class="line">AuthorizedKeysFile   .ssh/authorized_keys   # 公钥路径</span><br></pre></td></tr></tbody></table></figure>
 
 <p>重启服务 <code>sudo systemctl restart sshd</code></p>
 <h3 id="docker-命令免-sudo-前缀"><a href="#docker-命令免-sudo-前缀" class="headerlink" title="docker 命令免 sudo 前缀"></a>docker 命令免 sudo 前缀</h3><p>默认情况下，非 root 用户使用 docker 是需要加 sudo 前缀的，可以通过将用户加入 docker 用户组来免输 sudo 使用 docker 命令。</p>
@@ -671,7 +671,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">├── config.json</span><br><span class="line">├── geoip.dat</span><br><span class="line">├── geosite.dat</span><br><span class="line">├── systemd</span><br><span class="line">│&nbsp;&nbsp; └── system</span><br><span class="line">│&nbsp;&nbsp;     ├── v2ray.service</span><br><span class="line">│&nbsp;&nbsp;     └── v2ray@.service</span><br><span class="line">├── v2ctl</span><br><span class="line">├── v2ray</span><br><span class="line">├── vpoint_socks_vmess.json</span><br><span class="line">└── vpoint_vmess_freedom.json</span><br></pre></td></tr></tbody></table></figure>
 
 <p>接下来准备 systemd 的服务注册文件（用于将 v2ray 注册称一个服务以便自启动）,<br>修改文件 <code>/home/ubuntu/app/install/v2ray/systemd/system/v2ray.service</code>, 原内容如下：</p>
- <figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=V2Ray Service</span><br><span class="line">Documentation=https://www.v2fly.org/</span><br><span class="line">After=network.target nss-lookup.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">User=nobody</span><br><span class="line">CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE</span><br><span class="line">AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE</span><br><span class="line">NoNewPrivileges=true</span><br><span class="line">ExecStart=/usr/local/bin/v2ray -config /usr/local/etc/v2ray/config.json</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartPreventExitStatus=23</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
+ <figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=V2Ray Service</span><br><span class="line">Documentation=https://www.v2fly.org/</span><br><span class="line">After=network.target nss-lookup.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">User=nobody</span><br><span class="line">CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE</span><br><span class="line">AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE</span><br><span class="line">NoNewPrivileges=true</span><br><span class="line">ExecStart=/usr/local/bin/v2ray -config /usr/local/etc/v2ray/config.json</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartPreventExitStatus=23</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
 
 <p>有两处需要修改：</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># ExecStart... 启动命令，修改启动文件位置、配置文件位置：</span></span><br><span class="line">ExecStart=/home/ubuntu/app/install/v2ray/v2ray -config /home/ubuntu/app/install/v2ray/config.json</span><br></pre></td></tr></tbody></table></figure>
@@ -682,7 +682,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <p>查看 v2ray 运行状态：</p>
 <p><code>sudo systemctl status v2ray.service</code></p>
 <p>如下 log，当 Active 状态是 active 时，启动完成。</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">● v2ray.service - V2Ray Service</span><br><span class="line">     Loaded: loaded (/etc/systemd/system/v2ray.service; enabled; vendor preset: enabled)</span><br><span class="line">     Active: active (running) since Mon 2021-03-15 00:53:22 CST; 4h 5min ago</span><br><span class="line">       Docs: https://www.v2ray.com/</span><br><span class="line">             https://www.v2fly.org/</span><br><span class="line">   Main PID: 56320 (v2ray)</span><br><span class="line">      Tasks: 11 (limit: 4501)</span><br><span class="line">     Memory: 27.7M</span><br><span class="line">     CGroup: /system.slice/v2ray.service</span><br><span class="line">             └─56320 /home/ubuntu/app/install/v2ray/v2ray -c /home/ubuntu/app/v2ray.json</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">● v2ray.service - V2Ray Service</span><br><span class="line">     Loaded: loaded (/etc/systemd/system/v2ray.service; enabled; vendor preset: enabled)</span><br><span class="line">     Active: active (running) since Mon 2021-03-15 00:53:22 CST; 4h 5min ago</span><br><span class="line">       Docs: https://www.v2ray.com/</span><br><span class="line">             https://www.v2fly.org/</span><br><span class="line">   Main PID: 56320 (v2ray)</span><br><span class="line">      Tasks: 11 (limit: 4501)</span><br><span class="line">     Memory: 27.7M</span><br><span class="line">     CGroup: /system.slice/v2ray.service</span><br><span class="line">             └─56320 /home/ubuntu/app/install/v2ray/v2ray -c /home/ubuntu/app/v2ray.json</span><br></pre></td></tr></tbody></table></figure>
 
 <h3 id="配置v2ray"><a href="#配置v2ray" class="headerlink" title="配置v2ray"></a>配置 v2ray</h3><p>记录一下简要的配置备忘：<br>为了可读性和维护性，我用了 yaml 记录配置文件。v2ray 实际并不支持 yaml 格式的配置文件，将 yaml 先转成 json 才能够正常使用。</p>
 <p>yaml 转 json： <code>yq -j eval my_config.yaml &gt; my_config.json</code></p>
@@ -702,13 +702,13 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo apt-get install ipset -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个ipset(本质就是一个ip的列表)</span></span><br><span class="line">sudo ipset create my-v2ray-ip-list <span class="built_in">hash</span>:ip</span><br></pre></td></tr></tbody></table></figure>
 
 <p>编辑 dnsmasq 的配置文件：<code>sudo vim /etc/dnsmasq.conf</code><br>追加写入：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line"># 用于将域名 v2ray_server_host 匹配到的域名的ip写入 my-v2ray-ip-list 中</span><br><span class="line"># 距离 baidu.com 可以匹配到 baidu.com, pan.baidu.com 等。</span><br><span class="line">ipset=/v2ray_server_host/my-v2ray-ip-list</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line"># 用于将域名 v2ray_server_host 匹配到的域名的ip写入 my-v2ray-ip-list 中</span><br><span class="line"># 距离 baidu.com 可以匹配到 baidu.com, pan.baidu.com 等。</span><br><span class="line">ipset=/v2ray_server_host/my-v2ray-ip-list</span><br></pre></td></tr></tbody></table></figure>
 
 <p>之后重启 dnsmasq 服务即可生效 <code>systemctl restart dnsmasq.service</code>。</p>
 <h2 id="持久化-ipset-的配置"><a href="#持久化-ipset-的配置" class="headerlink" title="持久化 ipset 的配置"></a>持久化 ipset 的配置</h2><p>由于 ipset 关机会丢失，这里为它写一个自动保存和加载的脚本，参考上一篇中 iptables 的脚本。</p>
 <p>service 文件路径 /etc/systemd/system/myipset.service<br>处理 ipset 的脚本路径 /home/root/ipset.bash<br>ipset 备份文件保存路径 /home/root/backup.ipset.ipv4</p>
 <p>创建文件 service 文件，内容如下:</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=backup ipset when shutdown &amp; restore ipset when boot</span><br><span class="line">Before=myiptables.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">RemainAfterExit=true</span><br><span class="line">ExecStart=/bin/bash /home/root/ipset.bash restore</span><br><span class="line">ExecStop=/bin/bash /home/root/ipset.bash backup</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=backup ipset when shutdown &amp; restore ipset when boot</span><br><span class="line">Before=myiptables.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">RemainAfterExit=true</span><br><span class="line">ExecStart=/bin/bash /home/root/ipset.bash restore</span><br><span class="line">ExecStop=/bin/bash /home/root/ipset.bash backup</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
 
 <p>上面用到的保存 ipset 数据的脚本 ipset.bash 内容如下，</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">default_backup_file=<span class="string">"/home/root/backup.ipset.ipv4"</span> <span class="comment"># 关机时备份文件的位置，需要自定义</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"<span class="variable">$default_backup_file</span>"</span></span><br><span class="line"></span><br><span class="line">action=<span class="variable">$1</span></span><br><span class="line">backup_file=<span class="variable">${2:-<span class="variable">$default_backup_file</span>}</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ ! <span class="string">"<span class="variable">${backup_file}</span>"</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">"param 2 error: should not empty."</span></span><br><span class="line">  <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$action</span>"</span> == <span class="string">'restore'</span> ]; <span class="keyword">then</span></span><br><span class="line">  /sbin/ipset restore &lt;<span class="string">"<span class="variable">${backup_file}</span>"</span></span><br><span class="line">  <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$action</span>"</span> == <span class="string">'backup'</span> ]; <span class="keyword">then</span></span><br><span class="line">  ensure_dir_exist <span class="string">"<span class="subst">$(dirname <span class="string">"<span class="variable">$backup_file</span>"</span>)</span>"</span></span><br><span class="line">  /sbin/ipset save &gt;<span class="string">"<span class="variable">$backup_file</span>"</span></span><br><span class="line">  <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="built_in">echo</span> backup_file path: <span class="string">"<span class="variable">${default_backup_file}</span>"</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"user param: 'backup' or 'restore'"</span></span><br><span class="line"><span class="built_in">exit</span> 1</span><br></pre></td></tr></tbody></table></figure>
@@ -1009,6 +1009,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
     <content><![CDATA[<p>将 Ubuntu 主机配置成一台路由器。</p>
 <span id="more"></span>
 
+<hr>
 <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>主要实现功能</p>
 <ul>
 <li>准备硬件：一台具有多个网口的 ubuntu 主机 (以 <strong>ubuntu server 20.04</strong> 版本举例)</li>
@@ -1038,7 +1039,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <figure class="highlight yaml"><table><tbody><tr><td class="code"><pre><span class="line"><span class="attr">ethernets:</span></span><br><span class="line">    <span class="attr">wan1:</span></span><br><span class="line">      <span class="attr">match:</span>         <span class="comment"># 根据mac地址匹配，将配置参数应用到匹配的网卡上</span></span><br><span class="line">        <span class="attr">macaddress:</span> <span class="string">XX:XX:XX:XX:XX:01</span></span><br><span class="line">      <span class="attr">set-name:</span> <span class="string">wan1</span> <span class="comment"># 提高可读性，将网卡重命名为 wan1</span></span><br><span class="line">      <span class="comment"># dhcp4: true  # 动态IP,启用时需删除addresses,gateway4,nameservers</span></span><br><span class="line">      <span class="attr">addresses:</span>     <span class="comment"># 静态IP,据上级路由器而定，启用时关闭动态IP</span></span><br><span class="line">        <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.11</span><span class="string">/24</span></span><br><span class="line">      <span class="attr">gateway4:</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.1</span> <span class="comment"># 设置静态IP时需要</span></span><br><span class="line">      <span class="attr">nameservers:</span>          <span class="comment"># 设置静态IP时需要</span></span><br><span class="line">        <span class="attr">addresses:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.1</span></span><br><span class="line">    <span class="attr">eth1:</span></span><br><span class="line">      <span class="attr">match:</span></span><br><span class="line">        <span class="attr">macaddress:</span> <span class="string">XX:XX:XX:XX:XX:02</span></span><br><span class="line">      <span class="attr">set-name:</span> <span class="string">eth1</span></span><br><span class="line">      <span class="attr">dhcp4:</span> <span class="literal">no</span></span><br><span class="line">    <span class="attr">eth2:</span></span><br><span class="line">      <span class="attr">match:</span></span><br><span class="line">        <span class="attr">macaddress:</span> <span class="string">XX:XX:XX:XX:XX:03</span></span><br><span class="line">      <span class="attr">set-name:</span> <span class="string">eth2</span></span><br><span class="line">      <span class="attr">dhcp4:</span> <span class="literal">no</span></span><br></pre></td></tr></tbody></table></figure>
 
 <h3 id="开启端口转发功能"><a href="#开启端口转发功能" class="headerlink" title="开启端口转发功能"></a>开启端口转发功能</h3><p>ubuntu 默认的未开启端口转发功能，需要手动开启，<br>打开 <code>/etc/sysctl.conf</code> 并设置如下字段：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">net.ipv4.ip forward=1</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">net.ipv4.ip forward=1</span><br></pre></td></tr></tbody></table></figure>
 
 <p>还需要在 iptables 设置 nat 表的转发 (重启之后会失效，还需要持久化配置)</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo iptables -t nat -A POSTROUTING -o wan1 -j MASQUERADE</span><br></pre></td></tr></tbody></table></figure>
@@ -1050,7 +1051,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <li>iptables 备份文件保存路径  <code>/home/root/backup.iptable.ipv4</code></li>
 </ul>
 <p>创建文件 service 文件，内容如下</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=backup iptables when shutdown &amp; restore iptables when boot</span><br><span class="line">After=chinadns-ng.service</span><br><span class="line">After=myipset.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">RemainAfterExit=true</span><br><span class="line">ExecStart=/bin/bash /home/root/iptable.bash restore # 开机时执行的命令</span><br><span class="line">ExecStop=/bin/bash /home/root/iptable.bash backup   # 关机时执行的命令</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=backup iptables when shutdown &amp; restore iptables when boot</span><br><span class="line">After=chinadns-ng.service</span><br><span class="line">After=myipset.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">RemainAfterExit=true</span><br><span class="line">ExecStart=/bin/bash /home/root/iptable.bash restore # 开机时执行的命令</span><br><span class="line">ExecStop=/bin/bash /home/root/iptable.bash backup   # 关机时执行的命令</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></tbody></table></figure>
 
 <p>上面用到的保存 iptables 数据的脚本  <code>iptable.bash</code> 内容如下，</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">default_backup_file=<span class="string">"/home/root/backup.iptable.ipv4"</span></span><br><span class="line"></span><br><span class="line">action=<span class="variable">$1</span></span><br><span class="line">backup_file=<span class="variable">${2:-<span class="variable">$default_backup_file</span>}</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [[ <span class="string">"<span class="variable">$action</span>"</span> == <span class="string">'restore'</span> ]]; <span class="keyword">then</span></span><br><span class="line">  /sbin/iptables-restore &lt;<span class="string">"<span class="variable">${backup_file}</span>"</span></span><br><span class="line">  <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">if</span> [[ <span class="string">"<span class="variable">$action</span>"</span> == <span class="string">'backup'</span> ]]; <span class="keyword">then</span></span><br><span class="line">  ensure_dir_exist <span class="string">"<span class="subst">$(dirname <span class="string">"<span class="variable">$backup_file</span>"</span>)</span>"</span></span><br><span class="line">  /sbin/iptables-save &gt;<span class="string">"<span class="variable">${backup_file}</span>"</span></span><br><span class="line">  <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> iptables backup_file path: <span class="string">"<span class="variable">${default_backup_file}</span>"</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"user param: 'backup' or 'restore'"</span></span><br><span class="line"><span class="built_in">exit</span> 1</span><br></pre></td></tr></tbody></table></figure>
@@ -1064,9 +1065,9 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 
 <h3 id="dnsmasq-配置DHCP和DNS服务"><a href="#dnsmasq-配置DHCP和DNS服务" class="headerlink" title="dnsmasq: 配置DHCP和DNS服务"></a>dnsmasq: 配置 DHCP 和 DNS 服务</h3><p>安装域名服务 <code>dnsmasq</code>: <code>apt-get install dnsmasq</code></p>
 <p>修改 <code>/etc/dnsmasq.conf</code> 修改字段为以下配置</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">listen-address=127.0.0.1,10.10.20.1 # 监听 127.0.0.1 和 网桥的地址</span><br><span class="line">port=53                             # DNS 服务端口</span><br><span class="line">interface=eth1                      # DNS &amp; DHCP 服务网卡</span><br><span class="line">interface=eth2                      # DNS &amp; DHCP 服务网卡</span><br><span class="line"></span><br><span class="line">dhcp-range=10.10.20.10,10.10.20.99,255.255.255.0,12h  # DHCP 的IP范围,子网掩码,租期</span><br><span class="line">dhcp-option=option:router,10.10.20.1                  # 网关地址（网桥）</span><br><span class="line">dhcp-option=option:dns-server,10.10.20.1              # DNS 地址</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">listen-address=127.0.0.1,10.10.20.1 # 监听 127.0.0.1 和 网桥的地址</span><br><span class="line">port=53                             # DNS 服务端口</span><br><span class="line">interface=eth1                      # DNS &amp; DHCP 服务网卡</span><br><span class="line">interface=eth2                      # DNS &amp; DHCP 服务网卡</span><br><span class="line"></span><br><span class="line">dhcp-range=10.10.20.10,10.10.20.99,255.255.255.0,12h  # DHCP 的IP范围,子网掩码,租期</span><br><span class="line">dhcp-option=option:router,10.10.20.1                  # 网关地址（网桥）</span><br><span class="line">dhcp-option=option:dns-server,10.10.20.1              # DNS 地址</span><br></pre></td></tr></tbody></table></figure>
 
-<p>之后重启 dnsmasq：  <code>systemctl restart dnsmasq.service</code>。</p>
+<p>之后重启 dnsmasq: <code>systemctl restart dnsmasq.service</code>。</p>
 <p>如果因为 53 端口被占用启动失败，需要先停止 systemd-resolved 服务：</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo systemctl stop systemd-resolved      <span class="comment"># 关闭服务，但是开机还会自启动</span></span><br><span class="line">sudo systemctl <span class="built_in">disable</span> systemd-resolved   <span class="comment"># 开机不再自启动</span></span><br></pre></td></tr></tbody></table></figure>
 
@@ -1078,6 +1079,131 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
       </categories>
       <tags>
         <tag>Router(软路由)</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu 下添加新硬盘操作</title>
+    <url>/posts/a702/</url>
+    <content><![CDATA[<p>最近在安装 ESXI 环境，记录一下在 ubuntu 添加新硬盘的步骤，从中可以窥见 Ubuntu 对硬盘设备的管理裸机。</p>
+<span id="more"></span>
+
+<hr>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ul>
+<li>下文操作环境是 ESXI 上的虚拟机，理论上对物理机同样适用</li>
+<li>文中内容包括<ul>
+<li>对硬盘建分区</li>
+<li>格式化分区</li>
+<li>将硬盘挂载到一个已经存在的目录</li>
+<li>设置开机自动挂载</li>
+</ul>
+</li>
+</ul>
+<h2 id="添加硬盘"><a href="#添加硬盘" class="headerlink" title="添加硬盘"></a>添加硬盘</h2><p>在 esxi 的虚拟机管理页时，在第一行可以为虚拟机添加额外的硬盘，网卡等设备。</p>
+<p><img src="https://storage.googleapis.com/ppzz_blog/18/1.png" alt="1" title="ESXI 虚拟机管理页面截图，第三行小字有Label可以添加硬盘"></p>
+<p>增加硬盘后开机，硬盘连接到了 ubunut 系统，但是并没有做任何初始化工作，此时需要：</p>
+<ol>
+<li>新建分区</li>
+<li>格式化分区</li>
+<li>将硬盘挂载到一个已经存在的目录</li>
+<li>设置开机自动挂载</li>
+</ol>
+<p>之后才能够无感的使用。</p>
+<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><h3 id="查看硬盘信息"><a href="#查看硬盘信息" class="headerlink" title="查看硬盘信息"></a>查看硬盘信息</h3><p>用这个命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo fdisk -l</span><br></pre></td></tr></tbody></table></figure>
+
+<p>截图如下：</p>
+<p><img src="https://storage.googleapis.com/ppzz_blog/18/2.png" alt="2" title="ESXI 虚拟机管理页面截图，第三行小字有Label可以添加硬盘"></p>
+<p>实际输出：</p>
+<blockquote>
+<p>Disk /dev/sda: 30 GiB, 32212254720 bytes, 62914560 sectors<br>Disk model: Virtual disk<br>Units: sectors of 1 * 512 = 512 bytes<br>Sector size (logical/physical): 512 bytes / 512 bytes<br>I/O size (minimum/optimal): 512 bytes / 512 bytes<br>Disklabel type: gpt<br>Disk identifier: 3C1AD3FC-FCB4-42DE-8AEB-266F62F453C9</p>
+<p>Device       Start      End  Sectors Size Type<br>/dev/sda1     2048     4095     2048   1M BIOS boot<br>/dev/sda2     4096  2101247  2097152   1G Linux filesystem<br>/dev/sda3  2101248 62912511 60811264  29G Linux filesystem</p>
+<p>Disk /dev/sdb: 100 GiB, 107374182400 bytes, 209715200 sectors<br>Disk model: Virtual disk<br>Units: sectors of 1 * 512 = 512 bytes<br>Sector size (logical/physical): 512 bytes / 512 bytes<br>I/O size (minimum/optimal): 512 bytes / 512 bytes</p>
+</blockquote>
+<p>解读：</p>
+<p>其中 sda 是已经在使用中的硬盘，包括三个分区: sda1, sda2, sda3</p>
+<p>而 sdb 还没有分区存在。</p>
+<h3 id="新建分区"><a href="#新建分区" class="headerlink" title="新建分区"></a>新建分区</h3><p>使用这个命令对硬盘进行分区：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo fdisk /dev/sdb</span><br></pre></td></tr></tbody></table></figure>
+
+<p>截图如下</p>
+<p><img src="https://storage.googleapis.com/ppzz_blog/18/3.png" alt="3" title="ESXI 虚拟机管理页面截图，第三行小字有Label可以添加硬盘"></p>
+<p>实际输出</p>
+<blockquote>
+<p>hardnuts@vlab7:/mnt/volume$ sudo fdisk /dev/sdb</p>
+<p>Welcome to fdisk (util-linux 2.34).<br>Changes will remain in memory only, until you decide to write them.<br>Be careful before using the write command.</p>
+<p>Device does not contain a recognized partition table.<br>Created a new DOS disklabel with disk identifier 0x4cf6e589.</p>
+<p>Command (m for help): m</p>
+</blockquote>
+<p>根据提示，依次执行以下命令:</p>
+<ul>
+<li>n (新建分区)</li>
+<li>p (打印详情)</li>
+<li>w (写入磁盘)</li>
+<li>q (退出)</li>
+</ul>
+<p>截图:</p>
+<p><img src="https://storage.googleapis.com/ppzz_blog/18/4.png" alt="4" title="ESXI 虚拟机管理页面截图，第三行小字有Label可以添加硬盘"></p>
+<p>输出如下:</p>
+<blockquote>
+<p>Command (m for help): n<br>Partition type<br>    p   primary (0 primary, 0 extended, 4 free)<br>    e   extended (container for logical partitions)<br>Select (default p): p<br>Partition number (1-4, default 1):<br>First sector (2048-209715199, default 2048):<br>Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-209715199, default 209715199):</p>
+<p>Created a new partition 1 of type ‘Linux’ and of size 100 GiB.</p>
+<p>Command (m for help): p<br>Disk /dev/sdb: 100 GiB, 107374182400 bytes, 209715200 sectors<br>Disk model: Virtual disk<br>Units: sectors of 1 * 512 = 512 bytes<br>Sector size (logical/physical): 512 bytes / 512 bytes<br>I/O size (minimum/optimal): 512 bytes / 512 bytes<br>Disklabel type: dos<br>Disk identifier: 0x287febb1</p>
+<p>Device     Boot Start       End   Sectors  Size Id Type<br>/dev/sdb1        2048 209715199 209713152  100G 83 Linux</p>
+<p>Command (m for help): w<br>The partition table has been altered.<br>Calling ioctl() to re-read partition table.<br>Syncing disks.</p>
+</blockquote>
+<p>再查看看硬盘信息：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo fdisk -l</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看见已经存在分区了：</p>
+<p><img src="https://storage.googleapis.com/ppzz_blog/18/5.png" alt="5" title="ESXI 虚拟机管理页面截图，第三行小字有Label可以添加硬盘"></p>
+<p>输出：</p>
+<blockquote>
+<p>Disk /dev/sdb: 100 GiB, 107374182400 bytes, 209715200 sectors<br>Disk model: Virtual disk<br>Units: sectors of 1 * 512 = 512 bytes<br>Sector size (logical/physical): 512 bytes / 512 bytes<br>I/O size (minimum/optimal): 512 bytes / 512 bytes<br>Disklabel type: dos<br>Disk identifier: 0x287febb1</p>
+<p>Device     Boot Start       End   Sectors  Size Id Type<br>/dev/sdb1        2048 209715199 209713152  100G 83 Linux</p>
+</blockquote>
+<p>但是这个时候分区还不能够使用，需要格式化之后才能够正常使用。</p>
+<h3 id="格式化和挂载分区"><a href="#格式化和挂载分区" class="headerlink" title="格式化和挂载分区"></a>格式化和挂载分区</h3><p>格式化命令</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo mkfs -t ext4 /dev/sdb1</span><br></pre></td></tr></tbody></table></figure>
+
+<p>挂载分区即可使用</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo mount -t auto /dev/sdb1 /mnt/volume</span><br></pre></td></tr></tbody></table></figure>
+
+<p>挂载的分区重启之后会消失掉。需要在每次开机之后再手动执行挂载命令。<br>当然应该做成自动挂载。</p>
+<h3 id="开机自动挂载"><a href="#开机自动挂载" class="headerlink" title="开机自动挂载"></a>开机自动挂载</h3><p>这里使用硬盘分区的 uuid 来定位一个分区，</p>
+<p>查看磁盘的 UUID</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">blkid /dev/sdb1</span><br></pre></td></tr></tbody></table></figure>
+
+<p>输出：</p>
+<blockquote>
+<p>/dev/sdb1: UUID=”c41fa94b-7789-4f22-bb69-3a7f7c924147” TYPE=”ext4” PARTUUID=”287febb1-01”</p>
+</blockquote>
+<p>我们需要记录下来 UUID 这部分：“c41fa94b-7789-4f22-bb69-3a7f7c924147”</p>
+<p>另一种查看 uuid 的方式是这样：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /dev/disk/by-uuid</span><br><span class="line">ls -l </span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到有多个 uuid 以及其连接的分区，其中也可以找到 sdb1 这个分区的 UUID。</p>
+<p>接下来编辑 fstab</p>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">sudo vim /etc/fstab</span><br></pre></td></tr></tbody></table></figure>
+
+<p>加入以下行：（其中用到了 sdb1 的 UUID）</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">/dev/disk/by-uuid/c41fa94b-7789-4f22-bb69-3a7f7c924147 /mnt/volume  ext4 defaults 0 0</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>/dev/disk/by-uuid/c41fa94b-7789-4f22-bb69-3a7f7c924147 是磁盘的定位符</li>
+<li> /mnt/volume 挂载点</li>
+<li> ext4 文件系统类型</li>
+<li> defaults 挂载选项</li>
+<li> 0 dump 选项：是否让备份程序 dump 备份文件系统，0 为忽略，1 为备份，如果上次用 dump 备份，将显示备份至今的天数。</li>
+<li>0 fsck 选项：fsck 程序以什么顺序检查文件系统，为 0 就表示不检查，（/）分区永远都是 1，其它的分区只能从 2 开始，当数字相同就同时检查（但不能有两 1）</li>
+</ul>
+<p>之后重启系统就可以自动挂载分区了。</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1617,7 +1743,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <p>基于这样的原则使用 git，commit message 才能够发挥出应有的作用。试想以下，如果在写了一天的代码，仅仅做了一两次提交，当需要回退到今天某个时候的某一版代码时，岂不是灾难？<br>代码一定会有很多修改或者错误的地方，坚持下来的小步提交让人放心修改，大胆试错。</p>
 <h2 id="一个普通的-commit-message"><a href="#一个普通的-commit-message" class="headerlink" title="一个普通的 commit message"></a>一个普通的 commit message</h2><p>为了让提交信息更有可读性，最早由 Angular 团队开发了语义化的提交信息写法。</p>
 <p>一个语义化 Commit Message 的例子：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="code"><pre><span class="line">feat(config): allow provided config object to extend other configs</span><br><span class="line"></span><br><span class="line">1. add service/user config</span><br><span class="line">2. add updated config object comment</span><br><span class="line"></span><br><span class="line">BREAKING CHANGE: `extends` key in config file is now used for extending other config files</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">feat(config): allow provided config object to extend other configs</span><br><span class="line"></span><br><span class="line">1. add service/user config</span><br><span class="line">2. add updated config object comment</span><br><span class="line"></span><br><span class="line">BREAKING CHANGE: `extends` key in config file is now used for extending other config files</span><br></pre></td></tr></tbody></table></figure>
 
 <p>其格式可以归纳为：</p>
 <blockquote>
@@ -1696,7 +1822,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">npm install moleculer</span><br></pre></td></tr></tbody></table></figure>
 
 <h2 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h2><p>下面的这个小例子展示了使用 Moleculer 创建和调用服务有多简单。</p>
-<figure class="highlight javascript"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> { ServiceBroker } = <span class="built_in">require</span>(<span class="string">"moleculer"</span>);</span><br><span class="line"><span class="comment">// Create broker</span></span><br><span class="line"><span class="keyword">let</span> broker = <span class="keyword">new</span> ServiceBroker({ <span class="attr">logger</span>: <span class="built_in">console</span> });</span><br><span class="line"><span class="comment">// Create a service</span></span><br><span class="line">broker.createService({</span><br><span class="line">    name: <span class="string">"math"</span>,</span><br><span class="line">    actions: {</span><br><span class="line">        <span class="comment">// You can call it as broker.call("math.add")</span></span><br><span class="line">        <span class="function"><span class="title">add</span>(<span class="params">ctx</span>)</span> {</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">Number</span>(ctx.params.a) + <span class="built_in">Number</span>(ctx.params.b);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">});</span><br><span class="line"><span class="comment">// Start broker</span></span><br><span class="line">broker.start();</span><br><span class="line"><span class="comment">// Call actions of service</span></span><br><span class="line">broker.call(<span class="string">"math.add"</span>, { <span class="attr">a</span>: <span class="number">5</span>, <span class="attr">b</span>: <span class="number">3</span> }).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">"5 + 3 ="</span>, res));</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight javascript"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> { ServiceBroker } = <span class="built_in">require</span>(<span class="string">"moleculer"</span>);</span><br><span class="line"><span class="comment">// Create broker</span></span><br><span class="line"><span class="keyword">let</span> broker = <span class="keyword">new</span> ServiceBroker({ <span class="attr">logger</span>: <span class="built_in">console</span> });</span><br><span class="line"><span class="comment">// Create a service</span></span><br><span class="line">broker.createService({</span><br><span class="line">    <span class="attr">name</span>: <span class="string">"math"</span>,</span><br><span class="line">    <span class="attr">actions</span>: {</span><br><span class="line">        <span class="comment">// You can call it as broker.call("math.add")</span></span><br><span class="line">        <span class="function"><span class="title">add</span>(<span class="params">ctx</span>)</span> {</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">Number</span>(ctx.params.a) + <span class="built_in">Number</span>(ctx.params.b);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">});</span><br><span class="line"><span class="comment">// Start broker</span></span><br><span class="line">broker.start();</span><br><span class="line"><span class="comment">// Call actions of service</span></span><br><span class="line">broker.call(<span class="string">"math.add"</span>, { <span class="attr">a</span>: <span class="number">5</span>, <span class="attr">b</span>: <span class="number">3</span> }).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">"5 + 3 ="</span>, res));</span><br></pre></td></tr></tbody></table></figure>
 
 <p>正如所见，我们创建了一个 <code>math</code> 服务，有一个 <code>action</code> 叫 <code>add</code>。 这个 <code>action</code> 的作用是对两个参数求和。 创建后，我们可以使用 <code>broker.call</code> 方法调用它。<code>broker.call</code> 第一个参数是 <code>path（ervice name + action name）</code>，第二个参数是调用 <code>path</code> 指定的 <code>action</code> 需要的参数（需要包装成对象再传递）。</p>
 <blockquote>
