@@ -1084,7 +1084,7 @@ c3(A fas:fa-desktop) o---o c4(B fas:fa-desktop)
   <entry>
     <title>Ubuntu 下添加新硬盘操作</title>
     <url>/posts/a702/</url>
-    <content><![CDATA[<p>最近在安装 ESXI 环境，记录一下在 ubuntu 添加新硬盘的步骤，从中可以窥见 Ubuntu 对硬盘设备的管理裸机。</p>
+    <content><![CDATA[<p>最近在安装 ESXI 环境，记录一下在 ubuntu 添加新硬盘的步骤，从中可以窥见硬盘设备的管理逻辑。</p>
 <span id="more"></span>
 
 <hr>
